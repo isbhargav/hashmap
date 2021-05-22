@@ -8,7 +8,7 @@ struct HashMap<K, V> {
 }
 impl<K, V> HashMap<K, V>
 where
-    K: Hash + Eq + Copy, // we just need constrain in key to be hashable
+    K: Hash + Eq + Copy, // we just need constrain on key to be hashable
 {
     pub fn new() -> Self {
         HashMap {
@@ -31,9 +31,6 @@ where
         new_bucktes.extend((0..target_size).map(|_| Vec::new()));
 
         for (key, val) in self.buckets.iter_mut().flat_map(|bucket| bucket.drain(..)) {
-            // let mut hasher = DefaultHasher::new();
-            // key.hash(&mut hasher);
-            // let bucket = (hasher.finish() % new_bucktes.len() as u64) as usize;
             let bucket = Self::hash(key, new_bucktes.len());
             new_bucktes[bucket].push((key, val));
         }
@@ -44,12 +41,11 @@ where
         if self.buckets.is_empty() || self.items < 3 * self.buckets.len() / 4 {
             self.resize();
         }
-        // let mut hasher = DefaultHasher::new();
-        // key.hash(&mut hasher);
-        // let idx = (hasher.finish() % self.buckets.len() as u64) as usize;
         let bucket = Self::hash(key, self.buckets.len());
         let bucket = &mut self.buckets[bucket];
-        for &mut (ref ekey, ref mut evalue) in bucket.iter_mut() {
+        // for &mut (ref ekey, ref mut evalue) in bucket.iter_mut() {
+        for item in bucket.iter_mut() {
+            let (ref ekey, ref mut evalue) = item;
             if ekey == &key {
                 return Some(mem::replace(evalue, value));
             }
