@@ -70,6 +70,21 @@ mod tests {
     #[test]
     fn insert() {
         let mut map = HashMap::new();
-        map.insert("test", 42);
+        let val = 42;
+        let key = "test";
+        map.insert(key, val);
+        assert_eq!(
+            map.items, 1,
+            "Test Failed for number of items {} == {}",
+            map.items, 1
+        );
+        if let Some(ret_val) = map.get(&"test") {
+            // print!("{}",val);
+            assert_eq!(
+                ret_val, &val,
+                "Test Failed for get method: {} == {}",
+                ret_val, val
+            );
+        }
     }
 }
