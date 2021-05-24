@@ -62,11 +62,31 @@ where
             .find(|(ref ekey, _)| &ekey == &key)
             .map(|(_, ref val)| val)
     }
+    pub fn remove(&mut self, key: &K) -> Option<V> {
+        let bucket_idx = Self::hash(&key, self.buckets.len());
+        let mut remove_idx = None;
+        for (idx, item) in self.buckets[bucket_idx].iter().enumerate() {
+            let (ref ekey, _) = item;
+            if key == ekey {
+                remove_idx = Some(idx);
+                break;
+            }
+        }
+        match remove_idx {
+            Some(idx) => {
+                let (_k, v) = self.buckets[bucket_idx].remove(idx);
+                self.items -= 1;
+                Some(v)
+            }
+            _ => None,
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
     #[test]
     fn insert() {
         let mut map = HashMap::new();
@@ -78,12 +98,39 @@ mod tests {
             "Test Failed for number of items {} == {}",
             map.items, 1
         );
+    }
+    #[test]
+    fn get() {
+        let mut map = HashMap::new();
+        let val = 42;
+        let key = "test";
+        map.insert(key, val);
         if let Some(ret_val) = map.get(&"test") {
             // print!("{}",val);
             assert_eq!(
                 ret_val, &val,
                 "Test Failed for get method: {} == {}",
                 ret_val, val
+            );
+        }
+    }
+    #[test]
+    fn remove() {
+        let mut map = HashMap::new();
+        let val = 42;
+        let key = "test";
+        map.insert(key, val);
+        if let Some(ret_val) = map.remove(&"test") {
+            // print!("{}",val);
+            assert_eq!(
+                ret_val, val,
+                "Test Failed for remove method: {} == {}",
+                ret_val, val
+            );
+            assert_eq!(
+                map.items, 0,
+                "Test Failed for number of items after removal {} == {}",
+                map.items, 0
             );
         }
     }
