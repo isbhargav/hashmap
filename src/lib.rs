@@ -45,6 +45,7 @@ where
         let bucket = Self::hash(&key, self.buckets.len());
         let bucket = &mut self.buckets[bucket];
         // for &mut (ref ekey, ref mut evalue) in bucket.iter_mut() {
+        // for and if uses pattern matching
         for item in bucket.iter_mut() {
             let (ref ekey, ref mut evalue) = item;
             if ekey == &key {
@@ -64,22 +65,12 @@ where
     }
     pub fn remove(&mut self, key: &K) -> Option<V> {
         let bucket_idx = Self::hash(&key, self.buckets.len());
-        let mut remove_idx = None;
-        for (idx, item) in self.buckets[bucket_idx].iter().enumerate() {
-            let (ref ekey, _) = item;
-            if key == ekey {
-                remove_idx = Some(idx);
-                break;
-            }
-        }
-        match remove_idx {
-            Some(idx) => {
-                let (_k, v) = self.buckets[bucket_idx].remove(idx);
-                self.items -= 1;
-                Some(v)
-            }
-            _ => None,
-        }
+        let item_idx = self.buckets[bucket_idx]
+            .iter()
+            .position(|&(ref k, _)| return k == key)?; //predicate uses pattern matching
+        let remove = self.buckets[bucket_idx].remove(item_idx);
+        self.items -= 1;
+        return Some(remove.1);
     }
 }
 
